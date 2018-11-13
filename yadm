@@ -29,6 +29,7 @@ YADM_CONFIG="config"
 YADM_ENCRYPT="encrypt"
 YADM_ARCHIVE="files.gpg"
 YADM_BOOTSTRAP="bootstrap"
+YADM_PROFILE="profile"
 
 HOOK_COMMAND=""
 FULL_COMMAND=""
@@ -159,8 +160,8 @@ function alt() {
   match_user="(%|$local_user)"
 
   #; regex for matching "<file>##CLASS.SYSTEM.HOSTNAME.USER"
-  match1="^(.+)##(()|$match_system|$match_system\.$match_host|$match_system\.$match_host\.$match_user)$"
-  match2="^(.+)##($match_class|$match_class\.$match_system|$match_class\.$match_system\.$match_host|$match_class\.$match_system\.$match_host\.$match_user)$"
+  match1="^($YADM_DIR/$YADM_PROFILE/)(.+)##(()|$match_system|$match_system\.$match_host|$match_system\.$match_host\.$match_user)$"
+  match2="^($YADM_DIR/$YADM_PROFILE/)(.+)##($match_class|$match_class\.$match_system|$match_class\.$match_system\.$match_host|$match_class\.$match_system\.$match_host\.$match_user)$"
 
   cd_work "Alternates" || return
 
@@ -187,7 +188,7 @@ function alt() {
         if [ -e "$alt_path" ] ; then
           if [[ $alt_path =~ $match ]] ; then
             if [ "$alt_path" != "$last_linked" ] ; then
-              new_link="${BASH_REMATCH[1]}"
+              new_link="${BASH_REMATCH[2]}"
               debug "Linking $alt_path to $new_link"
               [ -n "$loud" ] && echo "Linking $alt_path to $new_link"
               if [ "$do_copy" -eq 1 ]; then
