@@ -29,7 +29,7 @@ YADM_CONFIG="config"
 YADM_ENCRYPT="encrypt"
 YADM_ARCHIVE="files.gpg"
 YADM_BOOTSTRAP="bootstrap"
-YADM_PROFILE="profile"
+YADM_ALT="$HOME/.yadm/profile"
 
 HOOK_COMMAND=""
 FULL_COMMAND=""
@@ -125,6 +125,15 @@ function main() {
 
 }
 
+#; ****** helper functions ******
+
+function new_path(new_link) {
+	full_path=$(realpath $new_link)
+	parent=$(dirname $full_path)
+	if [ ! -d $parent; then
+		mkdir -p $parent
+	fi
+
 #; ****** yadm Commands ******
 
 function alt() {
@@ -160,8 +169,10 @@ function alt() {
   match_user="(%|$local_user)"
 
   #; regex for matching "<file>##CLASS.SYSTEM.HOSTNAME.USER"
-  match1="^($YADM_DIR/$YADM_PROFILE/)(.+)##(()|$match_system|$match_system\.$match_host|$match_system\.$match_host\.$match_user)$"
-  match2="^($YADM_DIR/$YADM_PROFILE/)(.+)##($match_class|$match_class\.$match_system|$match_class\.$match_system\.$match_host|$match_class\.$match_system\.$match_host\.$match_user)$"
+  
+match1="^($YADM_ALT/)(.+)##(()|$match_system|$match_system\.$match_host|$match_system\.$match_host\.$match_user)$"
+  
+match2="^($YADM_ALT/)(.+)##($match_class|$match_class\.$match_system|$match_class\.$match_system\.$match_host|$match_class\.$match_system\.$match_host\.$match_user)$"
 
   cd_work "Alternates" || return
 
