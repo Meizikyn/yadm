@@ -1,3 +1,4 @@
+
 #!/bin/sh
 # yadm - Yet Another Dotfiles Manager
 # Copyright (C) 2015-2017 Tim Byrne
@@ -29,7 +30,6 @@ YADM_CONFIG="config"
 YADM_ENCRYPT="encrypt"
 YADM_ARCHIVE="files.gpg"
 YADM_BOOTSTRAP="bootstrap"
-YADM_ALT="$HOME/.yadm/profile"
 
 HOOK_COMMAND=""
 FULL_COMMAND=""
@@ -127,13 +127,13 @@ function main() {
 
 #; ****** helper functions ******
 
-function new_path(new_link) {
-	full_path=$(realpath $new_link)
+function new_path() {
+	full_path=$(realpath $1)
 	parent=$(dirname $full_path)
 	if [ ! -d $parent; then
 		mkdir -p $parent
 	fi
-
+}
 #; ****** yadm Commands ******
 
 function alt() {
@@ -168,11 +168,18 @@ function alt() {
   fi
   match_user="(%|$local_user)"
 
+  local_dotfiles="$(config local.dotfiles)"
+  if [ -z "$local_dotfiles" ] ; then
+    local_dotfiles="$HOME"
+  fi
+  match_dotfiles="(%|${local_dotfiles%/}/)"
+
+
   #; regex for matching "<file>##CLASS.SYSTEM.HOSTNAME.USER"
   
-match1="^($YADM_ALT/)(.+)##(()|$match_system|$match_system\.$match_host|$match_system\.$match_host\.$match_user)$"
+match1="^($match_dotfiles)(.+)##(()|$match_system|$match_system\.$match_host|$match_system\.$match_host\.$match_user)$"
   
-match2="^($YADM_ALT/)(.+)##($match_class|$match_class\.$match_system|$match_class\.$match_system\.$match_host|$match_class\.$match_system\.$match_host\.$match_user)$"
+match2="^($match_dotfiles)(.+)##($match_class|$match_class\.$match_system|$match_class\.$match_system\.$match_host|$match_class\.$match_system\.$match_host\.$match_user)$"
 
   cd_work "Alternates" || return
 
@@ -199,7 +206,7 @@ match2="^($YADM_ALT/)(.+)##($match_class|$match_class\.$match_system|$match_clas
         if [ -e "$alt_path" ] ; then
           if [[ $alt_path =~ $match ]] ; then
             if [ "$alt_path" != "$last_linked" ] ; then
-              new_link="${BASH_REMATCH[2]}"
+              new_link="${BASH_REMATCH[3]}"
               debug "Linking $alt_path to $new_link"
               [ -n "$loud" ] && echo "Linking $alt_path to $new_link"
               if [ "$do_copy" -eq 1 ]; then
@@ -364,7 +371,7 @@ EOF
 function config() {
 
   use_repo_config=0
-  local_options="^local\.(class|os|hostname|user)$"
+  local_options="^local\.(class|os|hostname|user|dotfiles)$"
   for option in "$@"; do
     [[ "$option" =~ $local_options ]] && use_repo_config=1
   done
@@ -605,6 +612,7 @@ EOF
 function introspect_configs() {
   cat << EOF
 local.class
+local.dotfiles
 local.hostname
 local.os
 local.user
